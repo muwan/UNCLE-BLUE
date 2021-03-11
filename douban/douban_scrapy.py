@@ -17,13 +17,7 @@ group_list = freeze_po("com.douban.frodo:id/list_view").children()
 
 for item in group_list:
     group_name = item.child("com.douban.frodo:id/tvTitle").get_text()
-    if group_name == "本少要给自己找BF❤Gay":
-        continue
-    if group_name == "我们是Gay,但我们很Man!":
-        continue
-    if group_name == "彩虹城市-Gay":
-        continue
-
+    print("group name is :",group_name)
     item.click()
     sleep(2)
     poco("com.douban.frodo:id/count").click()
@@ -48,12 +42,3 @@ for item in group_list:
             pre_name_list = user_name_list
             swipe((s_width * 0.5, s_height * 0.8), vector=[0, -1], duration=1)
             sleep(3)
-        
-#     print(item.type())
-# print(group_list)poco("com.douban.frodo:id/list_view")
-# poco("android.widget.ImageButton").click()
-# poco("android.widget.LinearLayout").offspring("android:id/content").offspring("com.douban.frodo:id/content_container").offspring("com.douban.frodo:id/view_pager").child("android.widget.FrameLayout").offspring("com.douban.frodo:id/list_view").child("android.view.ViewGroup")[0].click()
-# poco("com.douban.frodo:id/count").click()
-# poco(zOrders="{'global': 0, 'local': 6}").swipe([-0.0159, -0.4152])
-# poco(zOrders="{'global': 0, 'local': 8}").swipe([0.0573, -0.4047])
-poco

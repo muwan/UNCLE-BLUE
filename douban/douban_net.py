@@ -30,9 +30,6 @@ class Douban:
                 if self.group_id != group_id:
                     self.group_id = group_id
                     self.count = 0
-                # flow.request.query.set_all("count", ["30"])
-                # flow.request.query.set_all("start", [self.count])
-
                 ctx.log.warn("change flow query %s" % flow.request.query)
 
     def response(self, flow: http.HTTPFlow):
@@ -56,8 +53,5 @@ class Douban:
                 if not group.find_one({"id": group_data['id']}):
                     group.insert(group_data)
                 ctx.log.info("小组信息：%s" % self.group_name)
-
-            # ctx.log.warn("response %s" % text)
-
 
 addons = [Douban()]
