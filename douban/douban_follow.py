@@ -53,8 +53,9 @@ class Follow(object):
             json.dump(self.follow_json, f)
 
     async def launch(self) -> Browser:
+        p = Path("./userData").resolve()
         brownser: Browser = await launch(headless=False,
-                                         userDataDir="./userData",
+                                         userDataDir=p,
                                          ignoreHTTPSErrors=True,
                                          ignoreDefaultArgs=['--enable-automation'],
                                          loop=self.loop,
@@ -76,7 +77,6 @@ class Follow(object):
         await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get:() => false})')
         try:
             await page.goto(url, {
-                "timeout": self.timeout,
                 "waitUntil": [
                     'load',
                     'domcontentloaded']
@@ -86,11 +86,37 @@ class Follow(object):
             await asyncio.sleep(random.randint(1,3))
             await page.close()
             return status
+        except TimeoutError:
+            await page.reload()
         except Exception as e:
             print(url,e)
         finally:
             pass
             # await page.close()
+
+    async def stare_single_page(self, users, browser: Browser):
+        page = await browser.newPage()
+        await page.setViewport({"width": D_WIDTH, "height": D_HEIGHT})
+        await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get:() => false})')
+        for user in users:
+            url = user["url"]
+            try:
+                await page.goto(url, {
+                    "waitUntil": [
+                        'load',
+                        'domcontentloaded']
+                })
+                status = await self.prase_pages(user, page)
+                print("status ", status)
+                await asyncio.sleep(random.randint(1, 3))
+                await page.close()
+                return status
+            except TimeoutError:
+                await page.reload()
+            except Exception as e:
+                print(url, e)
+            finally:
+                pass
 
     async def prase_pages(self, user, page: Page):
         self.write_data(user["_id"])
@@ -125,42 +151,30 @@ class Follow(object):
     def callback(self, future):
         print('这是回调函数，返回结果', future.result())
 
-    async def run_with_urls(self, users, browser):
-        try:
-            tasks = []
-            for user in users:
-                task = asyncio.create_task(self.start_pages(user, browser))
-                # task.add_done_callback(self.callback)
-                tasks.append(task)
-            futures = asyncio.gather(*tasks)
-            await futures
-        finally:
-            pass
-
     async def start(self):
         start_id = self.follow_json["objectid"]
         cursor = USER_COLLECTION.find({"_id": {"$gte": ObjectId(start_id)}})
-        users = (await cursor.to_list(length=1000))[:20]
-        step = 5
+        users = (await cursor.to_list(length=1000))[:30]
         browser = await self.launch()
-        total = 0
-        for index in range(0, len(users), step):
-            page_users = [user for user in users[index:index + step]]
-            tasks = []
-            for user in page_users:
-                task = asyncio.create_task(self.start_pages(user, browser))
-                tasks.append(task)
-            results = await asyncio.gather(*tasks)
-            number = sum(1 if r else 0 for r in results)
-            print("本轮已经关注%s人" % number)
-            total += number
-            print("一共已经关注%s人" % total)
 
-        if total > 499:
-            print("今日关注已经结束")
-            # self.loop.run_until_complete(self.run_with_urls(page_users, browser))
-            # await self.run_with_urls(page_users, browser)
-            # print(page_users)
+        await self.stare_single_page(users,browser)
+        return
+        # step = 5
+        # total = 0
+        # for index in range(0, len(users), step):
+        #     page_users = [user for user in users[index:index + step]]
+        #     tasks = []
+        #     for user in page_users:
+        #         task = asyncio.create_task(self.start_pages(user, browser))
+        #         tasks.append(task)
+        #     results = await asyncio.gather(*tasks)
+        #     number = sum(1 if r else 0 for r in results)
+        #     print("本轮已经关注%s人" % number)
+        #     total += number
+        #     print("一共已经关注%s人" % total)
+        #
+        # if total > 499:
+        #     print("今日关注已经结束")
 
 
 if __name__ == '__main__':
