@@ -12,7 +12,8 @@ from mitmproxy import flowfilter, http, ctx
 
 client = pymongo.MongoClient("localhost")
 db = client["uncleblue"]
-collection = db["douban"]
+collection = db["douban_users"]
+group = db["douban_groups"]
 
 
 class Douban:
@@ -46,7 +47,6 @@ class Douban:
                     if not collection.find_one({"id": user['id'], "scrapy_from_group": self.group_id}):
                         collection.insert(user)
             elif flow.request.url.__contains__("?access="):
-                group = db["groups"]
                 group_info = flow.response.text
                 group_data = json.loads(group_info)
                 self.group_name = group_data.get("name")
