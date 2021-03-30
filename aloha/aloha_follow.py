@@ -129,6 +129,6 @@ def change_date():
     # pass
 
 if __name__ == '__main__':
-    change_date()
-    # aloha = Aloha()
+    # change_date()
+    aloha = Aloha()
 
