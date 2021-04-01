@@ -85,7 +85,7 @@ class WeiboNet(object):
                             fans["from_who"] = from_who
                             # 如果粉丝数大于1000 就标记一下
                             # 略过已经存在的和女生
-                            if not (collection.find_one({"from_who": from_who, "user.id": fans["user"]["id"]}) and fans["user"]["gender"]=="f"):
+                            if not (collection.find_one({"from_who": from_who, "user.id": fans["user"]["id"]}) or fans["user"]["gender"]=="f"):
                                 collection.insert(fans)
                                 ctx.log.info("粉丝保存成功")
                                 fans_count = fans["user"]["followers_count"]
