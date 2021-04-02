@@ -179,7 +179,7 @@ class Follow(object):
                     if not FOLLOW_COLLECTION.find_one({"userid": follow_id, "source": follow_who}):
                         FOLLOW_COLLECTION.insert_one(data)
 
-                self.real_count = FOLLOW_COLLECTION.find({"date":date}).count()
+                self.real_count = FOLLOW_COLLECTION.count_documents({"date":date})
                 print("已经关注 %s 人,当前时间：%s" % (self.real_count, time.strftime("%H:%M:%S", time.localtime())))
                 print("%s 粉丝数：%s 关注了:%s 人" % (follow_name, follow_fans, follow_num))
 
