@@ -5,6 +5,7 @@ Author:henly Date:2021/3/2
 """
 import json
 import pymongo
+import time
 
 from mitmproxy import flowfilter, http, ctx
 
@@ -32,6 +33,9 @@ class Aloha:
             data = json.loads(text)
             user_f = data.get("data")
             user = user_f.get("user")
+            date = time.strftime("%Y年%m月%d日", time.localtime())
+            user["record_date"] = date
+
             if not collection.find_one({"id": user['id']}):
                 collection.insert(user)
                 des_list = user['profileSpecList']
