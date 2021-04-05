@@ -7,6 +7,7 @@ Author:henly Date:2021/3/2
 from pyppeteer.page import Page
 from pyppeteer import launch
 from pyppeteer.browser import Browser
+from pyppeteer.errors import TimeoutError
 from bson.objectid import ObjectId
 from pathlib import Path
 from enum import Enum
@@ -25,6 +26,8 @@ db = client['uncleblue']
 collection = db['weibo_users']
 
 FOLLOW_COLLECTION = db["weibo_follow"]
+
+PASS_COLLECTION = db["weibo_pass"]
 
 Status = Enum("Status", ("Fail", "Success", "Skip", "Sleep"))
 
@@ -54,8 +57,8 @@ class Follow(object):
         try:
             await page.setViewport({'width': WINDOW_WIDTH, 'height': WINDOW_HEIGHT})
             await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get: () => undefined})')
-            await page.goto(userid, options={"timeout": 1000 * 60, "waitUntil": "networkidle0"})
-            await page.waitForSelector(selecter)
+            await page.goto(userid, options={"timeout": 1000*60, "waitUntil": "networkidle0"})
+            await page.waitForSelector(selecter,{"timeout":1000*30})
             # await asyncio.wait(
             #     [
             #         asyncio.sleep(3),
@@ -64,7 +67,7 @@ class Follow(object):
             # )
             return page
         except TimeoutError:
-            print('timeout error')
+            print(TimeoutError)
 
     async def prase_page(self, page: Page):
         sexElement = await page.querySelector("i.icon_pf_male")
@@ -127,8 +130,8 @@ class Follow(object):
                 if yzm_frame_new:
                     self.cjy.ReportError(pic_id)
                     print("现在时间: %s , 验证码未通过" % (time.strftime("%H:%M:%S", time.localtime())))
-                    png_name = f"{time.strftime('%Y%m%d%H%M%S', time.localtime())}.png"
-                    await web_page.screenshot({'path': f'./errImg/{png_name}'})
+                    # png_name = f"{time.strftime('%Y%m%d%H%M%S', time.localtime())}.png"
+                    # await web_page.screenshot({'path': f'./errImg/{png_name}'})
                     return "Fail"
                 else:
                     print("验证成功")
@@ -146,48 +149,47 @@ class Follow(object):
 
     async def pyppeteer_get(self):
         brownser = await self.launch_brownser()
-        try:
-            # "_id": {"$gte": ObjectId(user_id)}
-            userid = self.follow_json["mac_id"]
-            sys_user_list = list(collection.find({"_id": {"$gte": ObjectId(userid)}}))
-            page = await brownser.newPage()
+        # "_id": {"$gte": ObjectId(user_id)}
+        userid = self.follow_json["mac_id"]
+        sys_user_list = list(collection.find({"_id": {"$gte": ObjectId(userid)}}).limit(600))
+        page = await brownser.newPage()
 
-            for index, user in enumerate(sys_user_list):
-                self.last_follow = str(user["_id"])
-                self.write_to_txt()
-                follow_id = user["user"]["id"]
-                follow_name = user["user"]["screen_name"]
-                follow_avatar = user["user"]["avatar_hd"]
-                follow_who = user["from_who"]
-                follow_fans = user["user"]["followers_count"]
-                follow_num = user["user"]["follow_count"]
-                url = f"https://weibo.com/u/{user['user']['id']}?is_all=1"
-                date = time.strftime("%Y%m%d", time.localtime())
-
+        for index, user in enumerate(sys_user_list):
+            self.last_follow = str(user["_id"])
+            follow_id = user["user"]["id"]
+            follow_name = user["user"]["screen_name"]
+            follow_avatar = user["user"]["avatar_hd"]
+            follow_who = user["from_who"]
+            follow_fans = user["user"]["followers_count"]
+            follow_num = user["user"]["follow_count"]
+            url = f"https://weibo.com/u/{user['user']['id']}?is_all=1"
+            date = time.strftime("%Y%m%d", time.localtime())
+            await self.query_page(url, ".WB_frame_c", page)
+            status = await self.prase_page(page)
+            if status == "Sleep" or status == "Fail":
                 await self.query_page(url, ".WB_frame_c", page)
-                status = await self.prase_page(page)
-                if status == "Sleep" or status == "Fail":
-                    await self.query_page(url, ".WB_frame_c", page)
-                elif status == "Success":
-                    data = {"userid": follow_id,
-                            "avatar": follow_avatar,
-                            "name": follow_name,
-                            "source": follow_who,
-                            "fans": follow_fans,
-                            "follow": follow_num,
-                            "date":date}
-                    if not FOLLOW_COLLECTION.find_one({"userid": follow_id, "source": follow_who}):
-                        FOLLOW_COLLECTION.insert_one(data)
+            elif status == "Success":
+                data = {"userid": follow_id,
+                        "avatar": follow_avatar,
+                        "name": follow_name,
+                        "source": follow_who,
+                        "fans": follow_fans,
+                        "follow": follow_num,
+                        "date": date}
+                if not FOLLOW_COLLECTION.find_one({"userid": follow_id, "source": follow_who}):
+                    FOLLOW_COLLECTION.insert_one(data)
+            # elif status == "Pass"
 
-                self.real_count = FOLLOW_COLLECTION.count_documents({"date":date})
-                print("已经关注 %s 人,当前时间：%s" % (self.real_count, time.strftime("%H:%M:%S", time.localtime())))
-                print("%s 粉丝数：%s 关注了:%s 人" % (follow_name, follow_fans, follow_num))
+            self.real_count = FOLLOW_COLLECTION.count_documents({"date": date})
+            print("已经关注 %s 人,当前时间：%s" % (self.real_count, time.strftime("%H:%M:%S", time.localtime())))
+            print("%s 粉丝数：%s 关注了:%s 人，当前ID：%s" % (follow_name, follow_fans, follow_num,self.last_follow))
+            self.write_to_txt()
 
-                if self.real_count > 500:
-                    print("今天已将关注500人，bye")
-                    break
-        finally:
-            print("ok 今天的关注结束啦")
+
+            if self.real_count > 500:
+                print("今天已将关注500人，bye")
+                break
+
 
     def write_to_txt(self):
         if sys.platform == "darwin":

@@ -156,6 +156,7 @@ class Follow(object):
         self.fans_json["userid"] = id
         with open("fans.json", "w") as f:
             json.dump(self.fans_json, f)
+            
 
 
 def change_date():
