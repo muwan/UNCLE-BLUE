@@ -8,6 +8,11 @@ from poco.drivers.android.uiautomation import AndroidUiautomationPoco
 from multiprocessing import Process
 import pymongo
 
+import logging
+
+logger = logging.getLogger("airtest")
+logger.setLevel(logging.ERROR)
+
 
 # poco = AndroidUiautomationPoco(use_airtest_input=True, screenshot_each_action=False)
 # screenWidth, screenHeight = poco.get_screen_size()
@@ -24,16 +29,19 @@ import pymongo
 class Aloha(object):
     def __init__(self):
         connect_device(
-            "android://127.0.0.1:5037/DRGGAM0850527807?cap_method=MINICAP_STREAM&&ori_method=MINICAPORI&&touch_method=MINITOUCH")
+            "android://127.0.0.1:5037/4f74b1cc?cap_method=MINICAP_STREAM&&ori_method=MINICAPORI&&touch_method=MINITOUCH")
         self.poco = AndroidUiautomationPoco(use_airtest_input=True, screenshot_each_action=False)
         self.screenWidth, self.screenHeight = self.poco.get_screen_size()
+        self.total = 0
         self.loop_users()
 
     def like_people(self):
-        poco_like = self.poco("android.widget.TextView")
+        poco_like = self.poco("com.cupidapp.live:id/followImageView")
         if poco_like.exists():
             self.watcher()
             poco_like.click()
+            self.total += 1
+            print("喜欢了 %s 人" % self.total)
         back = self.poco("com.cupidapp.live:id/leftImageView")
         if back.exists():
             self.watcher()
@@ -53,20 +61,21 @@ class Aloha(object):
                 if like.exists():
                     self.watcher()
                     like.click()
+                    print("点赞一条动态")
                 back = self.poco("com.cupidapp.live:id/leftImageView")
                 if back.exists():
                     self.watcher()
                     back.click()
 
     def loop_users(self):
-        self.poco("翻咔").click()
+        start_app("com.cupidapp.live")
         self.watcher()
-        for _ in range(0, 500):
+        while True:
             # self.some_one_like_you()
-            if exists(Template(r"tpl1615803041124.png", record_pos=(0.402, -0.593), resolution=(1081, 2280))):
-                touch(Template(r"tpl1615803041124.png", record_pos=(0.402, -0.59), resolution=(1081, 2280)))
+            if exists(Template(r"tpl1617539799242.png", record_pos=(0.388, -0.533), resolution=(1080, 2340))):
                 self.watcher()
-
+                touch(Template(r"tpl1617539799242.png", record_pos=(0.388, -0.533), resolution=(1080, 2340)))
+                self.watcher()
                 swipe((self.screenWidth * 0.5, self.screenHeight * 0.7), vector=[0, -0.5], duration=1)
                 count = self.poco("com.cupidapp.live:id/postCountTitleTextView")
                 post_count = ""
@@ -95,6 +104,8 @@ class Aloha(object):
             if back.exists():
                 self.watcher()
                 back.click()
+            if self.total > 499:
+                break
 
 
     def watcher(self):
@@ -121,7 +132,7 @@ def change_date():
     db = client["uncleblue"]
     collection = db["aloha_follow"]
 
-    datas = collection.find({})
+    datas = collection.find({"record_date":None})
     for data in datas:
         date = time.strftime("%Y年%m月%d日", time.localtime())
         data["record_date"] = date
