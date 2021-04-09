@@ -25,6 +25,10 @@ logger.setLevel(logging.ERROR)
 #     print("已经关注：%s 人" % count)
 #     sleep(1)
 
+client = pymongo.MongoClient("localhost")
+db = client["uncleblue"]
+collection = db["aloha_follow"]
+
 
 class Aloha(object):
     def __init__(self):
@@ -68,6 +72,9 @@ class Aloha(object):
                     back.click()
 
     def loop_users(self):
+        date = time.strftime("%Y年%m月%d日", time.localtime())
+        self.total = collection.count_documents({"record_date":date})
+
         start_app("com.cupidapp.live")
         self.watcher()
         while True:

@@ -59,12 +59,6 @@ class Follow(object):
             await page.evaluateOnNewDocument('Object.defineProperty(navigator, "webdriver", {get: () => undefined})')
             await page.goto(userid, options={"timeout": 1000*60, "waitUntil": "networkidle0"})
             await page.waitForSelector(selecter,{"timeout":1000*30})
-            # await asyncio.wait(
-            #     [
-            #         asyncio.sleep(3),
-            #         page.waitForSelector(selecter, options={"timeout": 1000 * 60})
-            #     ]
-            # )
             return page
         except TimeoutError:
             print(TimeoutError)
@@ -111,7 +105,7 @@ class Follow(object):
     async def pass_verify(self, web_page):
         print("%s 阿哦，遇到验证码了" % time.strftime("%H:%M:%S", time.localtime()))
 
-        if self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
+        if True: # self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
             await asyncio.sleep(1)
             yzm_img = await web_page.waitForSelector("img.yzm_img")
             img = await yzm_img.screenshot()
