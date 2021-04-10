@@ -67,37 +67,41 @@ class Follow(object):
         sexElement = await page.querySelector("i.icon_pf_male")
         if sexElement:
             element = await page.querySelector("div[node-type='focusLink'] > a")
-            if not await page.evaluate('element => element.getAttribute("action-type")', element) == "unFollow":
-                await element.click()
-                await asyncio.sleep(2)
-                await element.focus()
-                await asyncio.sleep(3)
+            if element:
+                if not await page.evaluate('element => element.getAttribute("action-type")', element) == "unFollow":
+                    await element.click()
+                    await asyncio.sleep(2)
+                    await element.focus()
+                    await asyncio.sleep(3)
 
-                group = await page.querySelector(".list_ul > li[action-type='setGroup']")
-                if group:
-                    await group.click()
-                    await asyncio.sleep(random.randint(3,5))
-                labels = await page.querySelectorAll("[node-type='normal'] > li")
-                for lanel in labels:
-                    if await page.evaluate("element => element.innerText", lanel) == "待观察":
-                        await lanel.click()
-                        await asyncio.sleep(random.randint(1, 3))
-                        submit = await page.querySelector("[node-type='submit']")
-                        await submit.click() if submit else None
+                    group = await page.querySelector(".list_ul > li[action-type='setGroup']")
+                    if group:
+                        await group.click()
+                        await asyncio.sleep(random.randint(3, 5))
+                    labels = await page.querySelectorAll("[node-type='normal'] > li")
+                    for lanel in labels:
+                        if await page.evaluate("element => element.innerText", lanel) == "待观察":
+                            await lanel.click()
+                            await asyncio.sleep(random.randint(1, 3))
+                            submit = await page.querySelector("[node-type='submit']")
+                            await submit.click() if submit else None
 
-                await asyncio.sleep(random.randint(1, 3))
+                    await asyncio.sleep(random.randint(1, 3))
 
-                yzm_frame = await page.querySelector('input.yzm_input')
-                if yzm_frame:
-                    status = await self.pass_verify(page)
-                    return status
+                    yzm_frame = await page.querySelector('input.yzm_input')
+                    if yzm_frame:
+                        status = await self.pass_verify(page)
+                        return status
+                    else:
+                        self.last_status = False
+                        print('finish follow')
+                        return "Success"
                 else:
-                    self.last_status = False
-                    print('finish follow')
-                    return "Success"
+                    print("pass followed")
+                    return "Pass"
             else:
-                print("pass followed")
-                return "Pass"
+                print("fail followed")
+                return "Fail"
         else:
             print("skip female")
             return "Pass"
