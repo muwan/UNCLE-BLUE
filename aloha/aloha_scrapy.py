@@ -12,6 +12,7 @@ from mitmproxy import flowfilter, http, ctx
 client = pymongo.MongoClient("localhost")
 db = client["uncleblue"]
 collection = db["aloha_follow"]
+FRIENDS_LIST = db["aloha_friends"]
 
 
 class Aloha:
@@ -72,6 +73,19 @@ class Aloha:
             flow.response.set_text(changed_data)
             # ctx.log.warn("new response is %s" % flow.response.text)
 
+        elif flow.request.url.startswith("https://api.finka.cn/user/match/newest/v3"):
+            # 抓取好友
+            text = flow.response.text
+            friends = json.loads(text)
+            data = friends.get("data")
+            list = data.get("list")
+            filter = []
+            for user in list:
+                date = time.strftime("%Y年%m月%d日", time.localtime())
+                user["record_date"] = date
+                if not FRIENDS_LIST.find_one({"id": user['id']}):
+                    FRIENDS_LIST.insert(user)
+                    ctx.log.warn("已关注用户 %s" % user["name"])
 
         # elif flow.request.url.startswith("https://api.finka.cn/push/log/arrive"):
         #     print(flow.response.text)
