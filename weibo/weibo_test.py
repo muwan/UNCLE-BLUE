@@ -24,16 +24,16 @@ for item in all:
     item.pop("_id")
     if item.get("follow_analyse"):
         analyse = item["follow_analyse"]
-        replace_str = "{"
+        replace_str = "["
         for key, value in analyse.items():
-            name = f"\"\"{key}\"\":{{"
+            name = f"{{\"\"sourceId\"\":\"\"{key}\"\","
             a_name = ""
             for a_key, a_value in value.items():
                 a_name = a_name + f"\"\"{a_key}\"\":" + f"\"\"{a_value}\"\","
             a_name = a_name[:-1]
             name = name + a_name + "},"
             replace_str = replace_str + name
-        item["follow_analyse"] = replace_str[:-1] + "}"
+        item["follow_analyse"] = replace_str[:-1] + "]"
     replace_arr.append(item)
 
 with open("./test_app.json", "w") as file:

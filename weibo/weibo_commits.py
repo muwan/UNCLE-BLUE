@@ -9,20 +9,20 @@ import re
 import pymongo
 import time
 from weibo import Client
-
+from bmob import *
 from bs4 import BeautifulSoup
 
 client = pymongo.MongoClient('localhost')
 db = client['uncleblue']
 collection = db['weibo_daily']
 
+b = Bmob("ce6a4c194e9d9f83eb884b3b161ad38e", "47129c006b23e15fcd189fec80b11915")
+
 # souece = db["weibo_sources"]
 # datas = list(souece.find({"user.followers_count":{"$gte":10000}},{"user.id":1,"user.screen_name":1,"_id":0}))
 #
 # links = [(f"https://weibo.com/u/{user['user']['id']}?is_all=1",user["user"]["screen_name"]) for user in datas]
 # print(links)
-
-
 
 
 headers = {
@@ -40,7 +40,7 @@ headers = {
     "sec-fetch-dest": "document",
     "referer": "https://passport.weibo.cn/",
     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7,zh-HK;q=0.6",
-    }
+}
 
 url = "https://weibo.cn/"
 
@@ -56,11 +56,19 @@ fans_num = re.search(r"(\d+)", fans).group()
 
 date = time.strftime("%Y%m%d", time.localtime())
 data = {
-    "date":date,
-    "followers":follower_num,
-    "fans":fans_num
+    "date": date,
+    "followers": follower_num,
+    "fans": fans_num
 }
-if not collection.find_one({"date":date}):
+b.insert("weibo_analyse", data)
+
+if not collection.find_one({"date": date}):
     collection.insert_one(data)
+    # insert_data = {
+    #     "date": date,
+    #     "followers": follower_num,
+    #     "fans": fans_num
+    # }
+    b.insert("weibo_analyse", data)
 
 print("%s 今日粉丝数：%s 人，关注数：%s 人" % (time.strftime("%Y年%m月%d日", time.localtime()), fans_num, follower_num))
