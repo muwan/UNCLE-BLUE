@@ -35,7 +35,7 @@ Status = Enum("Status", ("Fail", "Success", "Skip", "Sleep"))
 class Follow(object):
     def __init__(self):
         self.cjy = chaojiying.Chaojiying_Client("sunbofu", "awgmRFEHbKSe.u7", "909639")
-        self.last_status = False
+        self.last_status = True
         self.real_count = 0
         self.follow_json = {}
         self.last_follow = None
@@ -108,49 +108,48 @@ class Follow(object):
 
     async def pass_verify(self, web_page):
         print("%s 阿哦，遇到验证码了" % time.strftime("%H:%M:%S", time.localtime()))
-        self.last_status = True
-        sleep_time = random.randint(150 * 60, 180 * 60)
-        print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
-            time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
-            int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
-        await asyncio.sleep(sleep_time)
-        return "Sleep"
+        # {self.last_status = True
+        # sleep_time = random.randint(150 * 60, 180 * 60)
+        # print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
+        #     time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
+        #     int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
+        # await asyncio.sleep(sleep_time);lpp3aqbv        Y&777777777aWMKK&
 
-        # if self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
-        #     await asyncio.sleep(1)
-        #     yzm_img = await web_page.waitForSelector("img.yzm_img")
-        #     img = await yzm_img.screenshot()
-        #     yzm_res = self.cjy.PostPic(img, "6004")
-        #     error_no = yzm_res.get("err_no")
-        #     pic_id = yzm_res.get("pic_id")
-        #     input_text = yzm_res.get("pic_str")
-        #     if input_text and error_no == 0:
-        #         self.last_status = False
-        #         await web_page.type("input[action-type='yzm_input']", input_text, {"delay": 2})
-        #         await asyncio.sleep(1)
-        #         submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
-        #         await submit_btn.click()
-        #         await asyncio.sleep(random.randint(1, 3))
-        #         yzm_frame_new = await web_page.querySelector('div.layer_verification')
-        #         if yzm_frame_new:
-        #             self.cjy.ReportError(pic_id)
-        #             print("现在时间: %s , 验证码未通过" % (time.strftime("%H:%M:%S", time.localtime())))
-        #             # png_name = f"{time.strftime('%Y%m%d%H%M%S', time.localtime())}.png"
-        #             # await web_page.screenshot({'path': f'./errImg/{png_name}'})
-        #             return "Fail"
-        #         else:
-        #             print("验证成功")
-        #             return "Success"
-        #     else:
-        #         return "Fail"
-        # else:
-        #     self.last_status = True
-        #     sleep_time = random.randint(90 * 60, 120 * 60)
-        #     print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
-        #         time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
-        #         int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
-        #     await asyncio.sleep(sleep_time)
-        #     return "Sleep"
+        if self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
+            await asyncio.sleep(1)
+            yzm_img = await web_page.waitForSelector("img.yzm_img")
+            img = await yzm_img.screenshot()
+            yzm_res = self.cjy.PostPic(img, "6004")
+            error_no = yzm_res.get("err_no")
+            pic_id = yzm_res.get("pic_id")
+            input_text = yzm_res.get("pic_str")
+            if input_text and error_no == 0:
+                self.last_status = False
+                await web_page.type("input[action-type='yzm_input']", input_text, {"delay": 2})
+                await asyncio.sleep(1)
+                submit_btn = await web_page.querySelector("[action-type='yzm_submit']")
+                await submit_btn.click()
+                await asyncio.sleep(random.randint(1, 3))
+                yzm_frame_new = await web_page.querySelector('div.layer_verification')
+                if yzm_frame_new:
+                    self.cjy.ReportError(pic_id)
+                    print("现在时间: %s , 验证码未通过" % (time.strftime("%H:%M:%S", time.localtime())))
+                    # png_name = f"{time.strftime('%Y%m%d%H%M%S', time.localtime())}.png"
+                    # await web_page.screenshot({'path': f'./errImg/{png_name}'})
+                    return "Fail"
+                else:
+                    print("验证成功")
+                    return "Success"
+            else:
+                return "Fail"
+        else:
+            self.last_status = True
+            sleep_time = random.randint(90 * 60, 120 * 60)
+            print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
+                time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
+                int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
+            await asyncio.sleep(sleep_time)
+            return "Sleep"
 
     async def pyppeteer_get(self):
         brownser = await self.launch_brownser()

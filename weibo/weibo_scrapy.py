@@ -12,6 +12,8 @@ from poco.drivers.android.uiautomation import AndroidUiautomationPoco
 import json
 import pymongo
 import logging
+# import pandas as pd
+
 
 logger = logging.getLogger("airtest")
 logger.setLevel(logging.ERROR)

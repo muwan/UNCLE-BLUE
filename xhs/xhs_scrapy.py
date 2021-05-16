@@ -6,6 +6,7 @@ Author:henly Date:2021/4/10
 import json
 import pymongo
 import time
+import re
 
 from mitmproxy import flowfilter, http, ctx
 
@@ -19,12 +20,11 @@ class XHS:
         if flow.request.url.startswith("https://edith.xiaohongshu.com/api/sns/v1/user/followers?user_id"):
             ctx.log.warn("小红书查询用户数 %s" % flow.request.query)
 
-        elif flow.request.url.startswith("https://api.finka.cn/user/match/newest/"):
-            ctx.log.info("配对参数 %s" % flow.request.query)
-        # else:
-        #     ctx.log.warn("url is %s" % flow.request.url)
 
     def response(self, flow: http.HTTPFlow):
+        url = flow.request.url
+        # match = re.search(".*xiaohongshu.com/api/sns/v1/user/.*followers\?user_id.*",url)
+        # print(match)
         if flow.request.url.startswith("https://edith.xiaohongshu.com/api/sns/v1/user/followers?user_id"):
             text = flow.response.text
             data = json.loads(text)

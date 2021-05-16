@@ -53,19 +53,21 @@ class Aloha(object):
 
     def like_post(self):
         post_list = self.poco("com.cupidapp.live:id/profilePostCoverImageView")
-        if post_list.exists():
+        if len(post_list) > 0:
             self.watcher()
-            post_list[0].click()
+            if post_list[0].exists():
+                post_list[0].click()
             sleep(1)
             # swipe((self.screenWidth * 0.5, self.screenHeight * 0.5), vector=[0, -0.5], duration=1)
             detail_list = self.poco("com.cupidapp.live:id/feedRecyclerView").children()
-            if detail_list.__len__() > 0:
+            if detail_list.exists():
                 detail_item = detail_list[0]
-                like = detail_item.offspring("com.cupidapp.live:id/feedPraiseButton")
-                if like.exists():
-                    self.watcher()
-                    like.click()
-                    print("点赞一条动态")
+                if detail_item.exists():
+                    like = detail_item.offspring("com.cupidapp.live:id/feedPraiseButton")
+                    if like.exists():
+                        self.watcher()
+                        like.click()
+                        print("点赞一条动态")
                 back = self.poco("com.cupidapp.live:id/leftImageView")
                 if back.exists():
                     self.watcher()
@@ -78,40 +80,46 @@ class Aloha(object):
         start_app("com.cupidapp.live")
         self.watcher()
         while True:
+            sleep(1)
             # self.some_one_like_you()
-            if exists(Template(r"tpl1617539799242.png", record_pos=(0.388, -0.533), resolution=(1080, 2340))):
-                self.watcher()
-                touch(Template(r"tpl1617539799242.png", record_pos=(0.388, -0.533), resolution=(1080, 2340)))
-                self.watcher()
-                swipe((self.screenWidth * 0.5, self.screenHeight * 0.7), vector=[0, -0.5], duration=1)
-                count = self.poco("com.cupidapp.live:id/postCountTitleTextView")
-                post_count = ""
-                if count.exists():
-                    post_count = count.get_text()
+            blur_list = self.poco("com.cupidapp.live:id/userAgeAndInfoTextView")
+            if blur_list.exists():
+                if blur_list[0].exists():
+                    self.watcher()
+                    blur_list[0].click()
+                    self.watcher()
+                    swipe((self.screenWidth * 0.5, self.screenHeight * 0.7), vector=[0, -0.5], duration=1)
+                    count = self.poco("com.cupidapp.live:id/postCountTitleTextView")
+                    post_count = ""
+                    if count.exists():
+                        post_count = count.get_text()
 
-                dest = self.poco("com.cupidapp.live:id/profileDescriptionTextView")
-                post_dest = ""
-                if dest.exists():
-                    post_dest = dest.get_text()
+                    dest = self.poco("com.cupidapp.live:id/profileDescriptionTextView")
+                    post_dest = ""
+                    if dest.exists():
+                        post_dest = dest.get_text()
 
-                print("pos_count:%s,pos_des is :%s" % (post_count, post_dest))
-                desc_list = self.poco("com.cupidapp.live:id/specContentTextView")
-                if desc_list.exists():
-                    for item in desc_list:
-                        print(item.get_text())
+                    print("pos_count:%s,pos_des is :%s" % (post_count, post_dest))
+                    desc_list = self.poco("com.cupidapp.live:id/specContentTextView")
+                    if len(desc_list) > 0:
+                        for item in desc_list:
+                            print(item.get_text())
 
-                if post_count != "暂无动态":
-                    self.like_post()
-                # 点击喜欢
-                self.like_people()
-            else:
-                self.watcher()
+                    if post_count != "暂无动态":
+                        self.like_post()
+                    # 点击喜欢
+                    self.like_people()
+                else:
+                    self.watcher()
 
             back = self.poco("com.cupidapp.live:id/leftImageView")
             if back.exists():
                 self.watcher()
                 back.click()
-            if self.total > 499:
+            else:
+                self.watcher()
+
+            if self.total > 800:
                 break
 
 

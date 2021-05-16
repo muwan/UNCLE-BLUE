@@ -31,11 +31,6 @@ class Aloha:
     def response(self, flow: http.HTTPFlow):
         if flow.request.url.startswith("https://api.finka.cn/user/profile/view/v3"):
             querys = flow.request.query
-            if querys.get("source") == "alohaToProfile":
-                ctx.log.error("个人详情")
-
-            else:
-                ctx.log.error("推送")
             text = flow.response.text
             data = json.loads(text)
             user_f = data.get("data")
@@ -79,13 +74,36 @@ class Aloha:
             friends = json.loads(text)
             data = friends.get("data")
             list = data.get("list")
-            filter = []
             for user in list:
                 date = time.strftime("%Y年%m月%d日", time.localtime())
+                if not collection.find_one({"id":user["id"]}):
+                    rec = {}
+                    rec["id"] = user["id"]
+                    rec["name"] = user["name"]
+                    rec["record_date"] = date
+                    collection.insert(rec)
+                    ctx.log.info("补录 %s " % (user["name"]))
+
                 user["record_date"] = date
                 if not FRIENDS_LIST.find_one({"id": user['id']}):
                     FRIENDS_LIST.insert(user)
                     ctx.log.warn("已关注用户 %s" % user["name"])
+
+        elif flow.request.url.startswith("https://api.finka.cn/user/match/liked/v3/newest/v3"):
+            text = flow.response.text
+            friends = json.loads(text)
+            data = friends.get("data")
+            list = data.get("list")
+            for user in list:
+                date = time.strftime("%Y年%m月%d日", time.localtime())
+                if not collection.find_one({"id":user["id"]}):
+                    rec = {}
+                    rec["id"] = user["id"]
+                    rec["name"] = user["name"]
+                    rec["record_date"] = date
+                    collection.insert(rec)
+                    ctx.log.info("补录 %s " % (user["name"]))
+
 
         # elif flow.request.url.startswith("https://api.finka.cn/push/log/arrive"):
         #     print(flow.response.text)
