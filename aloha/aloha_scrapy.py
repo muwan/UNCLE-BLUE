@@ -102,7 +102,7 @@ class Aloha:
                     rec["name"] = user["name"]
                     rec["record_date"] = date
                     collection.insert(rec)
-                    ctx.log.info("补录 %s " % (user["name"]))
+                    ctx.log.info("我喜欢的 %s " % (user["name"]))
 
 
         # elif flow.request.url.startswith("https://api.finka.cn/push/log/arrive"):

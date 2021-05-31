@@ -111,7 +111,7 @@ class WeiBoAnalyse(object):
 
     async def get_date_users(self):
         page = await self.launch()
-        day_list = [str(i) for i in range(20210424, 20210512)]
+        day_list = [str(i) for i in range(20210512, 20210527)]
         for date in day_list:
             self.double_follow = 0
             self.unfollow = 0

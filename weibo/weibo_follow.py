@@ -108,14 +108,14 @@ class Follow(object):
 
     async def pass_verify(self, web_page):
         print("%s 阿哦，遇到验证码了" % time.strftime("%H:%M:%S", time.localtime()))
-        # {self.last_status = True
+        # self.last_statu        s = True
         # sleep_time = random.randint(150 * 60, 180 * 60)
         # print("现在时间: %s , 休息时间 : %s 小时 %s 分 %s 秒" % (
         #     time.strftime("%H:%M:%S", time.localtime()), int(sleep_time / 3600),
         #     int((sleep_time % 3600) / 60), (sleep_time % 3600) % 60))
-        # await asyncio.sleep(sleep_time);lpp3aqbv        Y&777777777aWMKK&
+        # await asyncio.sleep(sleep_time)
 
-        if self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
+        if True: # self.real_count % 100 > 0 or self.real_count == 0 or self.last_status:
             await asyncio.sleep(1)
             yzm_img = await web_page.waitForSelector("img.yzm_img")
             img = await yzm_img.screenshot()
