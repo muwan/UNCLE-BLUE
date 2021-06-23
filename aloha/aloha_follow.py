@@ -46,6 +46,8 @@ class Aloha(object):
             poco_like.click()
             self.total += 1
             print("喜欢了 %s 人" % self.total)
+        else:
+            print("在，会是")
         back = self.poco("com.cupidapp.live:id/leftImageView")
         if back.exists():
             self.watcher()
@@ -57,21 +59,22 @@ class Aloha(object):
             self.watcher()
             if post_list[0].exists():
                 post_list[0].click()
-            sleep(1)
-            # swipe((self.screenWidth * 0.5, self.screenHeight * 0.5), vector=[0, -0.5], duration=1)
-            detail_list = self.poco("com.cupidapp.live:id/feedRecyclerView").children()
-            if detail_list.exists():
-                detail_item = detail_list[0]
-                if detail_item.exists():
-                    like = detail_item.offspring("com.cupidapp.live:id/feedPraiseButton")
-                    if like.exists():
-                        self.watcher()
-                        like.click()
-                        print("点赞一条动态")
-                back = self.poco("com.cupidapp.live:id/leftImageView")
-                if back.exists():
-                    self.watcher()
-                    back.click()
+            sleep(3)
+            like = self.poco("com.cupidapp.live:id/feedPraiseButton")
+            if like.exists():
+                self.watcher()
+                if len(like) > 0:
+                    like[0].click()
+                    print("点赞一条动态")
+                else:
+                    print(like.nodes)
+            else:
+                print("没找到")
+            self.watcher()
+            back = self.poco("com.cupidapp.live:id/leftImageView")
+            if back.exists():
+                self.watcher()
+                back.click()
 
     def loop_users(self):
         date = time.strftime("%Y年%m月%d日", time.localtime())
@@ -94,6 +97,10 @@ class Aloha(object):
                     if count.exists():
                         post_count = count.get_text()
 
+                    # startChat = self.poco("com.cupidapp.live:id/startChatButton")
+                    # cancleBtn = self.poco("com.cupidapp.live:id/followImageView")
+                    # if startChat.exists() or cancleBtn.exists():
+                    #     continue
                     dest = self.poco("com.cupidapp.live:id/profileDescriptionTextView")
                     post_dest = ""
                     if dest.exists():

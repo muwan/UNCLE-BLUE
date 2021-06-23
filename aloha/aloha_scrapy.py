@@ -13,21 +13,14 @@ client = pymongo.MongoClient("localhost")
 db = client["uncleblue"]
 collection = db["aloha_follow"]
 FRIENDS_LIST = db["aloha_friends"]
+NEAR_BY = db["aloha_nearby"]
 
 
 class Aloha:
     def __init__(self):
         flowfilter.parse('~u https://api.finka.cn/user/profile/view/')
 
-    def request(self, flow: http.HTTPFlow):
-        if flow.request.url.startswith("https://api.finka.cn/user/profile/view/v3"):
-            ctx.log.warn("change flow query %s" % flow.request.query)
-
-        elif flow.request.url.startswith("https://api.finka.cn/user/match/newest/"):
-            ctx.log.info("配对参数 %s" % flow.request.query)
-        # else:
-        #     ctx.log.warn("url is %s" % flow.request.url)
-
+ 
     def response(self, flow: http.HTTPFlow):
         if flow.request.url.startswith("https://api.finka.cn/user/profile/view/v3"):
             querys = flow.request.query
@@ -104,7 +97,31 @@ class Aloha:
                     collection.insert(rec)
                     ctx.log.info("我喜欢的 %s " % (user["name"]))
 
+        elif flow.request.url.startswith("https://api.finka.cn/nearby?_t"):
+            ctx.log.warn("抓取附近的人")
+            # text = flow.response.text
+            # nearby_json = json.loads(text)
+            # nearby_data = nearby_json.get("data")
+            # nearby_list = nearby_data.get("list")
 
+        elif flow.request.url.startswith("https://api.finka.cn/nearby/user?"):
+            ctx.log.warn("附近的人详情")
+            nearby = flow.response.text
+            nearby_json = json.loads(nearby)
+            nearby_data = nearby_json.get("data")
+            nearby_user = nearby_data.get("user")
+            age = nearby_user.get("age")
+            name = nearby_user.get("name")
+            if int(age) > 30:
+                ctx.log.warn("%s 年龄不符合" % name)
+            else:
+                date = time.strftime("%Y年%m月%d日", time.localtime())
+                nearby_user["record_date"] = date
+                userid = nearby_user.get("id")
+                if not NEAR_BY.find_one({"id":userid}):
+                    NEAR_BY.insert_one(nearby_user)
+                    ctx.log.warn("已经保存 %s" % name)
+            # return
         # elif flow.request.url.startswith("https://api.finka.cn/push/log/arrive"):
         #     print(flow.response.text)
         # elif flow.request.url.startswith("https://api.finka.cn/user/match/newest/"):
